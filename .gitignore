@@ -103,3 +103,10 @@ backup*/
 
 # API keys
 *apikey*
+
+# settings files used to test locally
+settings.json
+
+# development helper files and tools
+chatgpt.scanner.py
+chatgpt.output.txt
