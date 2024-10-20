@@ -9,6 +9,7 @@ def generate_job_application(prompt):
         raise ValueError("API Key is missing!")
     
     openai.api_key = api_key
+    
     response = openai.ChatCompletion.create(
         model="gpt-4o",
         messages=[

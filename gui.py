@@ -1,5 +1,4 @@
 ## gui.py
-import asyncio
 import os
 import re
 import sys
@@ -15,6 +14,8 @@ from webpage_saver import save_webpage
 from datetime import datetime
 import win32com.client as win32  # Für die Interaktion mit Word
 from text_redirector import TextRedirector
+import pythoncom
+import win32com.client as win32
 
 class JobAppGeneratorApp:
     HELP_URL = "https://github.com/schbrongx"  # Set the default help URL
@@ -260,6 +261,7 @@ class JobAppGeneratorApp:
         preview_textbox.config(yscrollcommand=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky="ns")
 
+
     def run_generate_thread(self):
         """Run the generate_application in a separate thread to avoid blocking Tkinter main loop."""
         print("gui.run_generate_thread: Disabling buttons, starting thread")
@@ -270,7 +272,7 @@ class JobAppGeneratorApp:
         thread.start()
 
 
-    async def generate_application(self):
+    def generate_application(self):
         """Generate the job application asynchronously and save job ad content as a file."""
         print("gui.generate_application: Starting application generation...")
 
@@ -299,16 +301,12 @@ class JobAppGeneratorApp:
             job_application = generate_job_application(prompt)
             print("gui.generate_application: Response from ChatGPT received.")
             # Update the UI with job application on the main thread
-            self.root.after(0, self.clear_output_text, job_application)
+            self.clear_output_text(job_application)
 
-        except openai.error.RateLimitError:
-            print(f"Rate limit exceeded. Please try again later.")
-        except openai.error.OpenAIError as e:
-            print(f"OpenAI API Error: {str(e)}")
         except Exception as e:
             print(f"An unexpected error occurred: {str(e)}")
         finally:
-            self.root.after(0, self.enable_buttons)  # Re-enable buttons
+            self.enable_buttons()
 
         # Extract company_name and job_title from ChatGPT response
         company_name, job_title = self.extract_meta_information(job_application)
@@ -320,16 +318,7 @@ class JobAppGeneratorApp:
             filename = re.sub(r'[<>:"/\\|?*%#@!&$^]', '', filename)
             filepath = os.path.join(self.settings.get("working_folder", ""), filename)
 
-            # Call save_webpage on the main thread after async processing is done
-            self.root.after(0, self.save_webpage_in_main_thread, job_ad_url, filepath, job_application)
-
-    def save_webpage_in_main_thread(self, job_ad_url, filepath, job_application):
-        """Save the webpage in the main thread since pyppeteer requires main thread execution."""
-        print(f"gui.save_webpage_in_main_thread: Saving webpage to: {filepath}")
-        
-        # Call save_webpage synchronously from the main thread
-        success, error = asyncio.run(save_webpage(job_ad_url, filepath))
-        
+        success, error = save_webpage(job_ad_url, filepath)
         if success:
             print(f"gui.save_webpage_in_main_thread: Webpage saved successfully as {filepath}.")
             self.create_word_document_from_template(filepath, job_application)
@@ -340,7 +329,9 @@ class JobAppGeneratorApp:
     def create_word_document_from_template(self, html_filepath, generated_text):
         """Create a Word document from the template and replace placeholder text with generated content."""
         print(f"gui.create_word_document_from_template: Create word document in working path folder and insert GTP reply.")
-        # Prüfe, ob ein Working Folder und eine Word-Vorlage angegeben sind
+ 
+        pythoncom.CoInitialize()
+
         working_folder = self.settings.get("working_folder")
         word_template = self.settings.get("word_template")
     
@@ -348,7 +339,6 @@ class JobAppGeneratorApp:
             print(f"\ngui.create_word_document_from_template: Error: No working folder or word template specified.\n")
             return
         
-        # Prüfe, ob der Working Folder und die Word-Vorlage tatsächlich existieren
         if not os.path.exists(working_folder):
             print(f"\ngui.create_word_document_from_template: Error: Working folder does not exist.\n")
             return
@@ -357,53 +347,43 @@ class JobAppGeneratorApp:
             print(f"\ngui.create_word_document_from_template: Error: Word template does not exist.\n")
             return
     
-        # Extrahiere den Dateinamen ohne .html und erstelle den neuen Pfad für das Word-Dokument
         html_filename = os.path.basename(html_filepath).replace('.html', '')
         word_docx_path = os.path.join(working_folder, f"{html_filename}.docx")
     
-        # Überprüfen, ob die Datei bereits existiert
         if os.path.exists(word_docx_path):
-            # Dialogfenster anzeigen, um den Benutzer zu fragen, ob er die Datei überschreiben möchte
             overwrite = messagebox.askyesno(
                 "Datei existiert bereits",
                 f"Die Datei {html_filename}.docx existiert bereits. Möchten Sie sie überschreiben?"
             )
-            # Wenn der Benutzer "Nein" wählt, brechen wir den Vorgang ab
             if not overwrite:
                 print(f"gui.create_word_document_from_template: Skipped creating Word document: {word_docx_path}")
                 return
 
         try:
             print("gui.create_word_document_from_template: Trying to generate word document.")
-            # Starte Word und öffne die Vorlage
             word_app = win32.Dispatch("Word.Application")
             word_app.Visible = False  # Word im Hintergrund starten
     
-            # Neues Dokument basierend auf der Vorlage erstellen
             doc = word_app.Documents.Add(word_template)
     
-            # Platzhalter [BEWERBUNGSTEXT] durch den von ChatGPT generierten Text ersetzen
             print("gui.create_word_document_from_template: Trying to Replace placeholder text in word document with ChatGPT's text.")
             self.replace_placeholder_in_word(doc, "[BEWERBUNGSTEXT]", generated_text)
 
-            # Speichern des neuen Dokuments im Working Folder mit dem gleichen Namen wie die .html-Datei
             doc.SaveAs(word_docx_path)
             doc.Close()
     
             print(f"gui.create_word_document_from_template: Word document created: {word_docx_path}")
 
-            # Check if the "Open Word document after generating" checkbox is checked
             if self.open_after_var.get():
                 print(f"Opening Word document: {word_docx_path}")
                 os.startfile(word_docx_path)  # This will open the Word document
-
     
         except Exception as e:
             print(f"gui.create_word_document_from_template: Error creating Word document: {str(e)}")
-    
         finally:
             word_app.Quit()
-    
+            pythoncom.CoUninitialize()
+
 
     def replace_placeholder_in_word(self, doc, placeholder, replacement_text):
         """Replaces the placeholder text in a Word document with the given replacement text."""
@@ -441,12 +421,9 @@ class JobAppGeneratorApp:
         self.clear_output_text("Generating... Please wait...")
         
         # Start the async application generation in a new thread using asyncio.run
-        thread = threading.Thread(target=self.run_async_generate_application)
+        thread = threading.Thread(target=self.generate_application)
         thread.start()
     
-    def run_async_generate_application(self):
-        """Run the async generate_application function in an asyncio event loop."""
-        asyncio.run(self.generate_application())
 
     def extract_meta_information(self, job_application):
         """Extracts company_name and job_title from ChatGPT's job application response."""
@@ -466,6 +443,7 @@ class JobAppGeneratorApp:
             print(f"gui.exract_meta_information: Failed to extract metadata: {str(e)}")
             return None, None
 
+
     def fetch_job_ad_content(self, job_ad_url):
         """Fetch and return job ad content."""
         try:
@@ -475,13 +453,12 @@ class JobAppGeneratorApp:
             print(f"Failed to fetch job ad content: {str(e)}")
             return None
 
+
     def generate_application_and_display(self, prompt):
         """Generate and display the job application."""
         try:
             job_application = generate_job_application(prompt)
             self.clear_output_text(job_application)
-        except openai.error.OpenAIError as e:
-            print(f"Failed to generate job application: {str(e)}")
         except Exception as e:
             print(f"An unexpected error occurred: {str(e)}")
         finally:
