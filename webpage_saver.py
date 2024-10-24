@@ -7,12 +7,23 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import base64
 from urllib.parse import urljoin
+import os
 import re
 import sys
 import PyPDF2
 import requests
 from io import BytesIO
 
+
+def resource_path(relative_path):
+    """Ermöglicht den Zugriff auf Ressourcen sowohl im Entwicklungsmodus als auch in der PyInstaller-Executable."""
+    try:
+        # PyInstaller verwendet ein temporäres Verzeichnis, das in _MEIPASS gespeichert ist
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 def fetch_rendered_page(url):
     try:
@@ -21,8 +32,10 @@ def fetch_rendered_page(url):
         chrome_options = Options()
         chrome_options.add_argument("--headless")  # Headless mode
         chrome_options.add_argument("--disable-gpu")  # Optional, disable GPU acceleration
-    
-        driver = webdriver.Chrome(service=Service("static\\chromedriver.exe"), options=chrome_options)
+
+        chromedriver_path = resource_path(os.path.join("static", "chromedriver.exe"))
+
+        driver = webdriver.Chrome(service=Service(chromedriver_path), options=chrome_options)
 
         print(f"webpage_saver.fetch_rendered_page: Loading {url}")
         # Öffne die URL
