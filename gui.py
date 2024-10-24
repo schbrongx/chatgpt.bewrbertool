@@ -75,17 +75,40 @@ class JobAppGeneratorApp:
                                                   command=self.save_checkbox_state)
         self.open_after_checkbox.pack(side=tk.LEFT, padx=10)
 
+
+        # Label for additional instructions field
+        self.instructions_label = tk.Label(self.root, text="Zusätzliche Anweisungen", anchor="w")
+        self.instructions_label.pack(fill=tk.X, padx=10)  # Packt das Label vor dem Instruktions-Frame
+        # Text field for additional instructions field
+        self.instructions_frame = tk.Frame(self.root)
+        self.instructions_frame.pack(fill=tk.X, padx=10, pady=10)
+        self.instructions_scrollbar = tk.Scrollbar(self.instructions_frame)
+        self.instructions_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.instructions_text = tk.Text(self.instructions_frame, height=3, wrap=tk.NONE, yscrollcommand=self.instructions_scrollbar.set)
+        self.instructions_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.instructions_scrollbar.config(command=self.instructions_text.yview)
+
+
+        # Lanbel for main text field
+        self.output_label = tk.Label(self.root, text="Ausgabe", anchor="w")
+        self.output_label.pack(fill=tk.X, padx=10)  # Packt das Label vor dem Ausgabefeld
+        # Main text field
         self.output_text = tk.Text(self.root)
         self.output_text.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
 
-        # Textausgabefeld für das Logging mit Scrollbar
+
+        # Label for log field
+        self.log_label = tk.Label(self.root, text="Log", anchor="w")
+        self.log_label.pack(fill=tk.X, padx=10)  # Packt das Label vor dem Log-Frame
+        # Text field for log field
         self.log_frame = tk.Frame(self.root)
         self.log_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
         self.scrollbar = tk.Scrollbar(self.log_frame)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.log_text = tk.Text(self.log_frame, height=10, font=tkFont.Font(family="Courier", size=10), wrap=tk.NONE, fg="white", bg="black", yscrollcommand=self.scrollbar.set)
+        self.log_text = tk.Text(self.log_frame, height=3, font=tkFont.Font(family="Courier", size=10), wrap=tk.NONE, fg="white", bg="black", yscrollcommand=self.scrollbar.set)
         self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.scrollbar.config(command=self.log_text.yview)
+
 
         self.root.grid_rowconfigure(1, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
@@ -239,6 +262,8 @@ class JobAppGeneratorApp:
         job_ad_content, _ = extract_job_ad_from_url(job_ad_url)
 
         job_query = self.settings.get("job_query", "")
+        additional_instructions = "\n# Weitere zusätzliche Anweisungen: \n" + self.instructions_text.get("1.0", tk.END).strip() 
+        job_query = job_query + "\n" + additional_instructions
         prompt = self._generate_prompt(job_query, job_ad_content, job_ad_url)
 
         # Display the preview in a resizable window
@@ -291,6 +316,8 @@ class JobAppGeneratorApp:
             return
 
         job_query = self.settings.get("job_query", "")
+        additional_instructions = "\n# Weitere zusätzliche Anweisungen: \n" + self.instructions_text.get("1.0", tk.END).strip() 
+        job_query = job_query + "\n" + additional_instructions
         print(f"gui.generate_application: Job Query: {job_query}")
         prompt = self._generate_prompt(job_query, job_ad_content, job_ad_url)
         print(f"gui.generate_application: Prompt generated: {prompt}")
