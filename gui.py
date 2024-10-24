@@ -97,15 +97,12 @@ class JobAppGeneratorApp:
         self.output_text.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
 
 
-        # Label for log field
-        self.log_label = tk.Label(self.root, text="Log", anchor="w")
-        self.log_label.pack(fill=tk.X, padx=10)  # Packt das Label vor dem Log-Frame
         # Text field for log field
         self.log_frame = tk.Frame(self.root)
         self.log_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)
         self.scrollbar = tk.Scrollbar(self.log_frame)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.log_text = tk.Text(self.log_frame, height=3, font=tkFont.Font(family="Courier", size=10), wrap=tk.NONE, fg="white", bg="black", yscrollcommand=self.scrollbar.set)
+        self.log_text = tk.Text(self.log_frame, height=6, font=tkFont.Font(family="Courier", size=10), wrap=tk.NONE, fg="white", bg="black", yscrollcommand=self.scrollbar.set)
         self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         self.scrollbar.config(command=self.log_text.yview)
 
