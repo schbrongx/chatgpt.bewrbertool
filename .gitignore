@@ -35,8 +35,7 @@ venv.bak/
 # PyInstaller
 # PyInstaller erstellt standardmäßig die Verzeichnisse 'build' und 'dist'
 build/
-dist/
-*.spec
+dist*/
 
 # Installer logs
 pip-log.txt
