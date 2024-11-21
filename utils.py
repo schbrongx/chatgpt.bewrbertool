@@ -1,6 +1,7 @@
 ## utils.py
 import json
 import os
+import sys
 import requests
 from bs4 import BeautifulSoup
 import PyPDF2
@@ -11,20 +12,38 @@ from webpage_saver import fetch_rendered_page
 
 
 # Constants for settings and API key file names
-SETTINGS_FILE = "settings.json"
-API_KEY_FILE = "chatgpt.apikey.txt"
+if getattr(sys, 'frozen', False):
+    # PyInstaller .exe
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    # Normales Python-Skript
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+SETTINGS_FILE = os.path.join(BASE_DIR, "settings.json")
+API_KEY_FILE = os.path.join(BASE_DIR, "chatgpt.apikey.txt")
 
 
 def load_settings():
     if os.path.exists(SETTINGS_FILE):
+        print(f"INFO: load_settings(): Trying to load settings from {SETTINGS_FILE}.")
         with open(SETTINGS_FILE, 'r') as f:
-            return json.load(f)
+            settings = json.load(f)
+        return settings
     return {"job_query": "", "last_urls": [], "working_folder": None}
 
 
 def save_settings(settings):
-    with open(SETTINGS_FILE, 'w') as f:
-        json.dump(settings, f, indent=2)
+    if not os.path.exists(SETTINGS_FILE):
+        print(f"ERROR: save_settings: file {SETTINGS_FILE} does not exist. Settings will not be saved.")
+        return
+    try:
+        print(f"save_settings(): Trying to save settings to {SETTINGS_FILE}")
+        with open(SETTINGS_FILE, 'w') as f:
+            json.dump(settings, f, indent=2)
+    except (OSError) as e:
+        print(f"OSError: {e.errno} - {e.strerror}")
+        print("Settings will not be saved.")
+        pass
 
 
 def load_api_key_from_file():
