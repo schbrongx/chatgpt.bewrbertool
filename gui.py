@@ -439,6 +439,8 @@ class JobAppGeneratorApp:
         # Add URL to the history if not already present
         if job_ad_url not in self.settings["last_urls"]:
             self.settings["last_urls"].append(job_ad_url)
+            # make sure the list has a maximum of 10 entries
+            self.settings["last_urls"] = self.settings["last_urls"][-10:]
             save_settings(self.settings)
         
         self.disable_buttons()
