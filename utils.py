@@ -34,8 +34,7 @@ def load_settings():
 
 def save_settings(settings):
     if not os.path.exists(SETTINGS_FILE):
-        print(f"ERROR: save_settings: file {SETTINGS_FILE} does not exist. Settings will not be saved.")
-        return
+        print(f"WARNING: save_settings: file {SETTINGS_FILE} does not exist. Creating new settings file.")
     try:
         print(f"save_settings(): Trying to save settings to {SETTINGS_FILE}")
         with open(SETTINGS_FILE, 'w') as f:
