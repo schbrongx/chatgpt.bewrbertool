@@ -84,5 +84,5 @@ This project is licensed under the MIT License.
 
 ## Acknowledgements
 - Thanks to [OpenAI](https://www.openai.com/) for providing the powerful language model that powers this application.
-- Special thanks to the developers of `tkinter`, `pyppeteer`, and other libraries used in this project.
-
+- Special thanks to the developers of `tkinter`, `selenium`, and other libraries used in this project.
+- Icon provided by Freepik Flaticon https://www.flaticon.com/free-icons/document
