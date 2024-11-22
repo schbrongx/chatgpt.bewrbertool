@@ -80,7 +80,7 @@ pip install -r requirements.txt
 Feel free to open issues or submit pull requests if you find a bug or have a feature request. Contributions are always welcome!
 
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License}(MIT_license.txt).
 
 ## Acknowledgements
 - Thanks to [OpenAI](https://www.openai.com/) for providing the powerful language model that powers this application.
