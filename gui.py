@@ -22,6 +22,7 @@ class JobAppGeneratorApp:
         print("gui.__init__: Initializing")
         self.root = root
         self.root.title("Bewerbungsgenerator mit ChatGPT")
+        self.root.iconbitmap("static/images/icon.ico")
 
         # Load settings from settings.json
         self.settings = load_settings()
