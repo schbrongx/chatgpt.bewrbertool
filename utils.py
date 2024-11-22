@@ -44,6 +44,13 @@ def save_settings(settings):
         print("Settings will not be saved.")
         pass
 
+def api_key_file_present():
+    print(f"api_key_file_present(): Checking if API key file {API_KEY_FILE} is present.")
+    if not os.path.exists(API_KEY_FILE):
+        print(f"  api_key_file_present(): API key file is missing.")
+        return False
+    print(f"  api_key_file_present(): API key file is present.")
+    return True
 
 def load_api_key_from_file():
     try:

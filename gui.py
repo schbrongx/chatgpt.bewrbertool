@@ -7,11 +7,9 @@ import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import filedialog, messagebox, ttk
 import webbrowser
-import openai
 from job_application_generator import generate_job_application
-from utils import extract_job_ad_from_url, load_settings, save_settings
+from utils import extract_job_ad_from_url, load_settings, save_settings, api_key_file_present
 from webpage_saver import save_webpage
-from datetime import datetime
 import win32com.client as win32  # Für die Interaktion mit Word
 from text_redirector import TextRedirector
 import pythoncom
@@ -114,6 +112,13 @@ class JobAppGeneratorApp:
         sys.stdout = TextRedirector(self.log_text)
         sys.stderr = TextRedirector(self.log_text)
 
+        # check if ChatGPT API key file is present
+        if not api_key_file_present():
+            message = ("ChatGPT API key file is missing! \nMake sure the file 'chatgpt.apikey.txt' is present in the same folder as the executable. \nThe file should contain just one line with the API key. \nInfo on creating an API key can be found here: https://platform.openai.com/docs/quickstart#create-and-export-an-api-key.\n")
+            self.clear_output_text(message)
+            self.disable_buttons
+        else:
+            print(f"ChatGPT API key file was found.")
 
     def _get_short_path(self, path, max_length=30):
         """Shorten the path, showing the first 10 characters and also the parent folder."""
