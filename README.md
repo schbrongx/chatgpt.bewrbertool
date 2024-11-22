@@ -27,7 +27,7 @@ It is by no means a polished project, initially I developed it for personal use,
   - `bs4` (BeautifulSoup4)
   - `pyttsx3` (for text-to-speech, optional)
   - `pywin32` (only for Windows to interact with Microsoft Word)
-  - `pyppeteer` (for rendering web pages)
+  - `selenium` (for rendering web pages)
 
 To install the dependencies, run the following command:
 
